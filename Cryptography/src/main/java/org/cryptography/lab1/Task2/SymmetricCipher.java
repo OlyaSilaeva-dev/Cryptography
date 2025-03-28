@@ -6,7 +6,7 @@ public interface SymmetricCipher {
      *
      * @param key Основной ключ (массив байтов), который будет использоваться для генерации раундовых ключей.
      */
-    void setRoundKey(byte[] key);
+    void setRoundKeys(byte[] key);
 
     /**
      * Шифрует блок данных, используя ранее установленный ключ.
@@ -23,4 +23,9 @@ public interface SymmetricCipher {
      * @return Расшифрованный блок (массив байтов).
      */
     byte[] decrypt(byte[] ciphertext);
-}
+
+    /**
+     * Возвращает размер блока алгоритма в байтах.
+     */
+    int getBlockSize();
+ }
