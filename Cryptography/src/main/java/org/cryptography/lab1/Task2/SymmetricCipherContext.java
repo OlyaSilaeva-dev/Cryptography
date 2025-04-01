@@ -88,7 +88,7 @@ public class SymmetricCipherContext {
                 SecureRandom random = new SecureRandom();
                 byte[] randomBytes = new byte[paddingSize - 1];
                 random.nextBytes(randomBytes);
-                System.arraycopy(randomBytes, 0, padded, padded.length, randomBytes.length);
+                System.arraycopy(randomBytes, 0, padded, data.length, randomBytes.length);
                 padded[padded.length - 1] = (byte) paddingSize;
             }
         }

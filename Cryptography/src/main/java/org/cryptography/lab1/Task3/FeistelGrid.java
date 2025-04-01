@@ -3,7 +3,6 @@ package org.cryptography.lab1.Task3;
 import org.cryptography.lab1.Task2.KeyExpansion;
 import org.cryptography.lab1.Task2.RoundFunction;
 import org.cryptography.lab1.Task2.SymmetricCipher;
-import org.cryptography.lab1.Task2.SymmetricCipherContext;
 
 import java.util.Arrays;
 
@@ -28,21 +27,52 @@ public class FeistelGrid implements SymmetricCipher {
 
     @Override
     public byte[] encrypt(byte[] plaintext) {
-        byte[] leftBlock = Arrays.copyOfRange(plaintext, 0, plaintext.length / 2);
-        byte[] rightBlock = Arrays.copyOfRange(plaintext, plaintext.length / 2, plaintext.length);
+        int halfSize = plaintext.length / 2;
+        byte[] leftBlock = Arrays.copyOfRange(plaintext, 0, halfSize);
+        byte[] rightBlock = Arrays.copyOfRange(plaintext, halfSize, plaintext.length);
 
+        for (int i = 0; i < roundKeys.length; i++) {
+            byte[] newRight = xor(leftBlock, roundFunction.roundConversion(rightBlock, roundKeys[i]));
+            leftBlock = rightBlock;
+            rightBlock = newRight;
+        }
+        return concatenate(leftBlock, rightBlock);
+    }
 
+    private byte[] xor(byte[] firstBlock, byte[] secondBlock) {
+        if (firstBlock.length != secondBlock.length) {
+            throw new IllegalArgumentException("Длины массивов должны совпадать");
+        }
+        byte[] result = new byte[firstBlock.length];
+        for (int i = 0; i < firstBlock.length; i++) {
+            result[i] = (byte) (firstBlock[i] ^ secondBlock[i]);
+        }
+        return result;
+    }
 
-        return new byte[0];
+    private byte[] concatenate(byte[] leftBlock, byte[] rightBlock) {
+        byte[] result = new byte[leftBlock.length + rightBlock.length];
+        System.arraycopy(leftBlock, 0, result, 0, leftBlock.length);
+        System.arraycopy(rightBlock, 0, result, leftBlock.length, rightBlock.length);
+        return result;
     }
 
     @Override
     public byte[] decrypt(byte[] ciphertext) {
-        return new byte[0];
+        int halfSize = ciphertext.length / 2;
+        byte[] leftBlock = Arrays.copyOfRange(ciphertext, 0, halfSize);
+        byte[] rightBlock = Arrays.copyOfRange(ciphertext, halfSize, ciphertext.length);
+
+        for (int i = roundKeys.length - 1; i >= 0; i--) {
+            byte[] newRight = xor(leftBlock, roundFunction.roundConversion(rightBlock, roundKeys[i]));
+            leftBlock = rightBlock;
+            rightBlock = newRight;
+        }
+        return concatenate(leftBlock, rightBlock);
     }
 
     @Override
     public int getBlockSize() {
-        return 0;
+        return roundFunction.getBlockSize();
     }
 }
