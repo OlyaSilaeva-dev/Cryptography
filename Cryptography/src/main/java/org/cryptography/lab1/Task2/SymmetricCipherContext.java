@@ -209,8 +209,88 @@ public class SymmetricCipherContext {
         }
     }
 
+    public CompletableFuture<byte[]> decryptAsync(byte[] plaintext) {
+        return CompletableFuture.supplyAsync(() -> decrypt(plaintext), executor);
+    }
+
     public byte[] decrypt(byte[] ciphertext) {
-        //TODO реализация
-        return cipher.decrypt(ciphertext);
+        int blockSize = this.cipher.getBlockSize();
+        int blockCnt = (int) Math.ceil((double) ciphertext.length / (double) blockSize);
+        byte[][] cipherBlocks = new byte[blockCnt][blockSize];
+
+        for (int i = 0; i < blockCnt; i++) {
+            System.arraycopy(ciphertext, i * blockSize, cipherBlocks[i], 0, blockSize);
+        }
+
+        log.info(Arrays.toString(cipherBlocks));
+        return switch (encryptionMode) {
+            case ECB -> ECBDecrypt(cipherBlocks, blockSize, blockCnt);
+            case CBC -> CBCDecrypt(cipherBlocks, blockSize, blockCnt);
+            case PCBC -> PCBDecrypt(cipherBlocks, blockSize, blockCnt);
+            case CFB -> CFBDecrypt(cipherBlocks, blockSize, blockCnt);
+            case OFB -> OFBDecrypt(cipherBlocks, blockSize, blockCnt);
+            case CTR -> CTRDecrypt(cipherBlocks, blockSize, blockCnt);
+            case RandomDelta -> RandomDeltaDecrypt(cipherBlocks, blockSize, blockCnt);
+        };
+    }
+
+    private byte[] ECBDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
+        byte[] plaintext = new byte[blockCnt * blockSize];
+        for (int i = 0; i < blockCnt; i++) {
+            byte[] plainBlock = cipher.decrypt(blocks[i]);
+            System.arraycopy(plainBlock, 0, plaintext, i * blockSize, blockSize);
+        }
+        return plaintext;
+    }
+
+    private byte[] CBCDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
+        byte[] plaintext = new byte[blockCnt * blockSize];
+        byte[] prevBlock = iv.clone();
+
+        for (int i = 0; i < blockCnt; i++) {
+            byte[] decryptedBlock = cipher.decrypt(blocks[i]);
+            byte[] plainBlock = XOR2Blocks(decryptedBlock, prevBlock);
+            System.arraycopy(plainBlock, 0, plaintext, i * blockSize, blockSize);
+            prevBlock = blocks[i];
+        }
+        return plaintext;
+    }
+
+    private byte[] PCBDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
+        byte[] plaintext = new byte[blockCnt * blockSize];
+        byte[] prevPlain = iv.clone();
+
+        for (int i = 0; i < blockCnt; i++) {
+            byte[] decryptedBlock = cipher.decrypt(blocks[i]);
+            byte[] plainBlock = XOR2Blocks(decryptedBlock, prevPlain);
+            System.arraycopy(plainBlock, 0, plaintext, i * blockSize, blockSize);
+            prevPlain = plainBlock;
+        }
+        return plaintext;
+    }
+
+    private byte[] CFBDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
+        byte[] plaintext = new byte[blockCnt * blockSize];
+        byte[] prevCipher = iv.clone();
+
+        for (int i = 0; i < blockCnt; i++) {
+            byte[] cipherStream = cipher.encrypt(prevCipher);
+            byte[] plainBlock = XOR2Blocks(cipherStream, blocks[i]);
+            System.arraycopy(plainBlock, 0, plaintext, i * blockSize, blockSize);
+            prevCipher = blocks[i];
+        }
+        return plaintext;
+    }
+
+    private byte[] OFBDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
+        return OFBEncrypt(blocks, blockSize, blockCnt);
+    }
+
+    private byte[] CTRDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
+        return CTREncrypt(blocks, blockSize, blockCnt);
+    }
+
+    private byte[] RandomDeltaDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
+        return RandomDeltaEncrypt(blocks, blockSize, blockCnt);
     }
 }
