@@ -5,19 +5,29 @@ import org.cryptography.lab1.Task1.BitsOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.cryptography.lab1.Task1.Task1.rearrangingBits;
+import static org.cryptography.lab1.Task1.RearrangingBits.rearrangingBits;
 
 public class Main {
     public static void main(String[] args) {
-        List<Byte> data = new ArrayList<>();
-        data.add((byte) 0b00111111);
-        System.out.println(Integer.toBinaryString(data.getFirst() & 0xFF));
+        byte [] data = {(byte) 0b10011011};
+        System.out.println(Integer.toBinaryString(data[0] & 0xFF));
+//        boolean firstBit = ((data[0] & 1) == 1);
+//        boolean sixthBit = ((data[0] >> 5) & 1) == 1;
+//        System.out.println((firstBit ? 1: 0) + " " + (sixthBit ? 1: 0));
+//        int row = (firstBit ? 1 : 0) | (sixthBit ? 2 : 0);
+//        byte byte1 = (byte) ((data[0] >> 1) & 15);
+//        System.out.println(Integer.toBinaryString(byte1 & 0xFF));
+//        int col = firstBit ? ((data[0] >> 1) & 15) : 0;
+//        System.out.println("row: " + row);
+//        System.out.println("col: " + col);
 
-        int[] pBox = {4, 2, 1, 3, 7, 5, 8, 6};
+        boolean firstBit = ((data[0] >> 7) & 1) == 1;
+        boolean sixthBit = ((data[0] >> 2) & 1) == 1;
+        System.out.println((firstBit ? 1: 0) + " " + (sixthBit ? 1: 0));
+        int row = (firstBit ? 2 : 0) | (sixthBit ? 1 : 0);
+        int col = firstBit ? ((data[0] >> 3) & 7) : 0;
+        System.out.println("row: " + Integer.toBinaryString(row));
+        System.out.println("col: " + Integer.toBinaryString(col));
 
-        byte[] arr = rearrangingBits(data, pBox, BitsOrder.LSB_FIRST, 1);
-        for (byte b : arr) {
-            System.out.println(Integer.toBinaryString(b & 0xFF));
-        }
     }
 }
