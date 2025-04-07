@@ -1,11 +1,11 @@
-package org.cryptography.lab1.Task4;
+package org.cryptography.lab1.DES;
 
-import org.cryptography.lab1.Task1.BitsOrder;
-import org.cryptography.lab1.Task1.RearrangingBits;
+import org.cryptography.lab1.enums.BitsOrder;
+import static org.cryptography.lab1.rearrangingBits.RearrangingBits.rearrangingBits;
 
-public class EBoxConversion extends RearrangingBits {
+public class EBoxConversion {
 
-    private final int[] eBitSelectionTable = {
+    private static final int[] eBitSelectionTable = {
             32, 1, 2, 3, 4, 5,
             4, 5, 6, 7, 8, 9,
             8, 9, 10, 11, 12, 13,
@@ -16,7 +16,7 @@ public class EBoxConversion extends RearrangingBits {
             28, 29, 30, 31, 32, 1
     };
 
-    public byte[] eBitSelection(byte[] data, BitsOrder bitsOrder) {
+    public static byte[] eBitSelection(byte[] data, BitsOrder bitsOrder) {
         return rearrangingBits(data, eBitSelectionTable, bitsOrder, 1);
     }
 }

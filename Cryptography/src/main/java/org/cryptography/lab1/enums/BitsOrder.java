@@ -1,4 +1,4 @@
-package org.cryptography.lab1.Task1;
+package org.cryptography.lab1.enums;
 
 /*
 Least Significant Bit First

@@ -1,4 +1,4 @@
-package org.cryptography.lab1.Task2;
+package org.cryptography.lab1.interfaces;
 
 public interface SymmetricCipher {
     /**

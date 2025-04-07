@@ -1,5 +1,5 @@
-import org.cryptography.lab1.Task1.BitsOrder;
-import org.cryptography.lab1.Task4.SBoxConversion;
+import org.cryptography.lab1.enums.BitsOrder;
+import org.cryptography.lab1.DES.SBoxConversion;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

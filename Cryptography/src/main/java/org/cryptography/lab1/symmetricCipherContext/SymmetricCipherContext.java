@@ -1,6 +1,9 @@
-package org.cryptography.lab1.Task2;
+package org.cryptography.lab1.symmetricCipherContext;
 
 import lombok.extern.slf4j.Slf4j;
+import org.cryptography.lab1.enums.EncryptionMode;
+import org.cryptography.lab1.enums.PaddingMode;
+import org.cryptography.lab1.interfaces.SymmetricCipher;
 
 import java.security.SecureRandom;
 import java.util.Arrays;

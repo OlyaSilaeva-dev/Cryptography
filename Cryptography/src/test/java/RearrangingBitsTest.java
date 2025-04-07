@@ -1,9 +1,6 @@
-import lombok.extern.slf4j.Slf4j;
-import org.cryptography.lab1.Task1.BitsOrder;
-import org.cryptography.lab1.Task1.RearrangingBits;
+import org.cryptography.lab1.enums.BitsOrder;
+import org.cryptography.lab1.rearrangingBits.RearrangingBits;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 

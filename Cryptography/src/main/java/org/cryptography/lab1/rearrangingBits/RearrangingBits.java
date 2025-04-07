@@ -1,6 +1,6 @@
-package org.cryptography.lab1.Task1;
+package org.cryptography.lab1.rearrangingBits;
 
-import java.util.List;
+import org.cryptography.lab1.enums.BitsOrder;
 
 public class RearrangingBits {
     public static byte[] rearrangingBits(byte[] data, int[] pBox, BitsOrder bitsOrder, int indexFirstBit) {

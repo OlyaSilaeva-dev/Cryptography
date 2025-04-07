@@ -1,19 +1,18 @@
-package org.cryptography.lab1.Task4;
+package org.cryptography.lab1.DES;
 
 import lombok.extern.slf4j.Slf4j;
-import org.cryptography.lab1.Task1.BitsOrder;
-import org.cryptography.lab1.Task1.RearrangingBits;
-import org.cryptography.lab1.Task2.RoundFunction;
+import org.cryptography.lab1.enums.BitsOrder;
+import org.cryptography.lab1.rearrangingBits.RearrangingBits;
+import org.cryptography.lab1.interfaces.RoundFunction;
 
 import java.util.Arrays;
+
+import static org.cryptography.lab1.DES.EBoxConversion.*;
 
 @Slf4j
 public class DESRoundFunction implements RoundFunction {
     private static final int blockSize = 8;
     private final BitsOrder bitsOrder;
-    EBoxConversion eBoxConversion = new EBoxConversion();
-    SBoxConversion sBoxConversion = new SBoxConversion();
-    RearrangingBits rearrangingBits = new RearrangingBits();
 
     private static final int[] pBox = {
             16,  7, 20, 21,
@@ -32,10 +31,10 @@ public class DESRoundFunction implements RoundFunction {
 
     @Override
     public byte[] roundConversion(byte[] inputBlock, byte[] roundKey) {
-        byte[] eBitSelectionOfInputBlock = eBoxConversion.eBitSelection(inputBlock, bitsOrder);
-        byte[] xorBlocks = xor(eBitSelectionOfInputBlock, roundKey);
+        byte[] eBitSelectionOfInputBlock = EBoxConversion.eBitSelection(inputBlock, bitsOrder);
+        byte[] xorBlocks = XOR(eBitSelectionOfInputBlock, roundKey);
         byte[] sixBitsBoxes = splitIntoBoxes(xorBlocks);
-        byte[] result = sBoxConversion.sBoxConversion(sixBitsBoxes, bitsOrder);
+        byte[] result = SBoxConversion.sBoxConversion(sixBitsBoxes, bitsOrder);
         result = RearrangingBits.rearrangingBits(result, pBox, bitsOrder, 1);
         return result;
     }
@@ -63,7 +62,7 @@ public class DESRoundFunction implements RoundFunction {
         return result;
     }
 
-    private byte[] xor(byte[] firstBlock, byte[] secondBlock) {
+    public static byte[] XOR(byte[] firstBlock, byte[] secondBlock) {
         if (firstBlock.length != secondBlock.length) {
             throw new IllegalArgumentException("Длины массивов должны совпадать");
         }

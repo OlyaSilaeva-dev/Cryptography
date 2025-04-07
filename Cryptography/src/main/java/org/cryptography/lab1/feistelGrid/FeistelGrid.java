@@ -1,10 +1,12 @@
-package org.cryptography.lab1.Task3;
+package org.cryptography.lab1.feistelGrid;
 
-import org.cryptography.lab1.Task2.KeyExpansion;
-import org.cryptography.lab1.Task2.RoundFunction;
-import org.cryptography.lab1.Task2.SymmetricCipher;
+import org.cryptography.lab1.interfaces.KeyExpansion;
+import org.cryptography.lab1.interfaces.RoundFunction;
+import org.cryptography.lab1.interfaces.SymmetricCipher;
 
 import java.util.Arrays;
+
+import static org.cryptography.lab1.DES.DESRoundFunction.XOR;
 
 /**
  * Реализация функционала сети Фейстеля
@@ -32,22 +34,11 @@ public class FeistelGrid implements SymmetricCipher {
         byte[] rightBlock = Arrays.copyOfRange(plaintext, halfSize, plaintext.length);
 
         for (int i = 0; i < roundKeys.length; i++) {
-            byte[] newRight = xor(leftBlock, roundFunction.roundConversion(rightBlock, roundKeys[i]));
+            byte[] newRight = XOR(leftBlock, roundFunction.roundConversion(rightBlock, roundKeys[i]));
             leftBlock = rightBlock;
             rightBlock = newRight;
         }
         return concatenate(leftBlock, rightBlock);
-    }
-
-    private byte[] xor(byte[] firstBlock, byte[] secondBlock) {
-        if (firstBlock.length != secondBlock.length) {
-            throw new IllegalArgumentException("Длины массивов должны совпадать");
-        }
-        byte[] result = new byte[firstBlock.length];
-        for (int i = 0; i < firstBlock.length; i++) {
-            result[i] = (byte) (firstBlock[i] ^ secondBlock[i]);
-        }
-        return result;
     }
 
     private byte[] concatenate(byte[] leftBlock, byte[] rightBlock) {
@@ -64,7 +55,7 @@ public class FeistelGrid implements SymmetricCipher {
         byte[] rightBlock = Arrays.copyOfRange(ciphertext, halfSize, ciphertext.length);
 
         for (int i = roundKeys.length - 1; i >= 0; i--) {
-            byte[] newRight = xor(leftBlock, roundFunction.roundConversion(rightBlock, roundKeys[i]));
+            byte[] newRight = XOR(leftBlock, roundFunction.roundConversion(rightBlock, roundKeys[i]));
             leftBlock = rightBlock;
             rightBlock = newRight;
         }

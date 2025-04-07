@@ -1,6 +1,6 @@
-package org.cryptography.lab1.Task4;
+package org.cryptography.lab1.DES;
 
-import org.cryptography.lab1.Task1.BitsOrder;
+import org.cryptography.lab1.enums.BitsOrder;
 
 public class SBoxConversion {
 
@@ -62,7 +62,7 @@ public class SBoxConversion {
 
     private static final byte[][][] S_BOXES = {S_BOX1, S_BOX2, S_BOX3, S_BOX4, S_BOX5, S_BOX6, S_BOX7, S_BOX8};
 
-    public byte[] sBoxConversion(byte[] input, BitsOrder bitsOrder) {
+    public static byte[] sBoxConversion(byte[] input, BitsOrder bitsOrder) {
         if (input.length != S_BOXES.length) {
             throw new IllegalArgumentException("Input array length does not match expected length");
         }
@@ -86,7 +86,7 @@ public class SBoxConversion {
         return concatenateBlocks(resultBlocks);
     }
 
-    byte[] concatenateBlocks(byte[] blocks) {
+    private static byte[] concatenateBlocks(byte[] blocks) {
         byte[] result = new byte[blocks.length / 2];
         for (int i = 0; i < blocks.length / 2; i++) {
             result[i] = (byte) ((blocks[i * 2] << 4) | blocks[i * 2 + 1]);
