@@ -25,8 +25,8 @@ public class DES extends FeistelGrid {
             34,	2,	42,	10,	50,	18,	58,	26,	33,	1,  41,	9,	49,	17,	57,	25
     };
 
-    private static final RoundFunction DESRoundFunction = new DESRoundFunction(bitsOrder);
-    private static final DESKeyExpansion DESKeyExpansion = new DESKeyExpansion();
+    public static final RoundFunction DESRoundFunction = new DESRoundFunction(bitsOrder);
+    public static final DESKeyExpansion DESKeyExpansion = new DESKeyExpansion();
 
     public DES() {
         super(DESKeyExpansion, DESRoundFunction);
@@ -37,16 +37,16 @@ public class DES extends FeistelGrid {
         log.info("Encrypt plaintext");
         byte[] result = RearrangingBits.rearrangingBits(plaintext, IP, bitsOrder, 1);
         result = super.encrypt(result);
-        RearrangingBits.rearrangingBits(result, IP_1, bitsOrder, 1);
+        result = RearrangingBits.rearrangingBits(result, IP_1, bitsOrder, 1);
         return result;
     }
 
     @Override
     public byte[] decrypt(byte[] ciphertext) {
         log.info("Decrypt ciphertext");
-        byte[] result = RearrangingBits.rearrangingBits(ciphertext, IP_1, bitsOrder, 1);
+        byte[] result = RearrangingBits.rearrangingBits(ciphertext, IP, bitsOrder, 1);
         result = super.decrypt(result);
-        RearrangingBits.rearrangingBits(result, IP, bitsOrder, 1);
+        result = RearrangingBits.rearrangingBits(result, IP_1, bitsOrder, 1);
         return result;
     }
 }

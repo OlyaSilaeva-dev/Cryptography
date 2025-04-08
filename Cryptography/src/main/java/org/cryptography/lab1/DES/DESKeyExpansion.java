@@ -1,9 +1,13 @@
 package org.cryptography.lab1.DES;
 
+import lombok.extern.slf4j.Slf4j;
 import org.cryptography.lab1.enums.BitsOrder;
 import org.cryptography.lab1.interfaces.KeyExpansion;
 import org.cryptography.lab1.rearrangingBits.RearrangingBits;
 
+import static org.cryptography.lab1.rearrangingBits.RearrangingBits.rearrangingBits;
+
+@Slf4j
 public final class DESKeyExpansion implements KeyExpansion {
 
     private static final int[] PC1 = {
@@ -30,109 +34,77 @@ public final class DESKeyExpansion implements KeyExpansion {
             34, 53, 46, 42, 50, 36, 29, 32
     };
 
+    private static String byteArrayToBinaryString(byte[] byteArray) {
+        StringBuilder binaryString = new StringBuilder();
+        for (byte b : byteArray) {
+            String binaryByte = String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
+            binaryString.append(binaryByte).append(" ");
+        }
+        return binaryString.toString().trim();
+    }
 
     @Override
     public byte[][] keyExpansion(byte[] key) {
         if (key.length != 7) {
-            throw new IllegalArgumentException("DES key must be 64 bits (8 bytes) long");
+            throw new IllegalArgumentException("DES key must be 56 bits (7 bytes) long");
         }
-        byte[] expandedKey = addBits(key);
 
-        byte[] pc1Key = RearrangingBits.rearrangingBits(expandedKey, PC1, BitsOrder.MSB_FIRST, 1);
+        byte[] key64 = addParityBits(key); // 56 -> 64 бит с чётностью
+        byte[] key56 = RearrangingBits.rearrangingBits(key64, PC1, BitsOrder.MSB_FIRST, 1); // 64 -> 56 бит
 
-        byte[] C = extractBits(pc1Key, 0, 28);
-        byte[] D = extractBits(pc1Key, 28, 28);
+        // Разбиваем на C и D
+        long keyBits = toLong(key56); // 56 бит в long
+        int C = (int) ((keyBits >>> 28) & 0x0FFFFFFF);
+        int D = (int) (keyBits & 0x0FFFFFFF);
 
         byte[][] roundKeys = new byte[16][6];
 
         for (int i = 0; i < 16; i++) {
-            C = shiftLeft(C, 28, SHIFTS[i]);
-            D = shiftLeft(D, 28, SHIFTS[i]);
+            C = leftShift28(C, SHIFTS[i]);
+            D = leftShift28(D, SHIFTS[i]);
 
-            byte[] CD = joinBitArrays(C, D, 28);
+            long combined = (((long) C) << 28) | (D & 0x0FFFFFFF);
+            byte[] cdBytes = toByteArray(combined, 7); // 56 бит в 7 байт
 
-            byte[] roundKey = RearrangingBits.rearrangingBits(expandedKey, PC2, BitsOrder.MSB_FIRST, 1);
-
-            roundKeys[i] = roundKey;
+            roundKeys[i] = RearrangingBits.rearrangingBits(cdBytes, PC2, BitsOrder.MSB_FIRST, 1); // 56 -> 48 бит
         }
 
         return roundKeys;
     }
 
-    private static byte[] addBits(byte[] key) {
-        byte[] result = new byte[8];
-        int bitIndex = 0;
-
-        for (int i = 0; i < 8; i++) {
-            int b = 0;
-            int onesCnt = 0;
-
-            for (int j = 0; j < 7; j++) {
-                int byteIndex = bitIndex / 8;
-                int bitInByte = 7 - (bitIndex % 8);
-
-                int bit = (key[byteIndex] >> bitInByte) & 1;
-                b = (b << 1) | bit;
-
-                onesCnt += bit;
-                bitIndex++;
-            }
-
-            int parity = (onesCnt % 2 == 0) ? 1 : 0;
-            result[i] = (byte) ((b << 1) | parity);
+    private byte[] addParityBits(byte[] key56) {
+        byte[] key64 = new byte[8];
+        for (int i = 0; i < 7; i++) {
+            int b = key56[i] & 0xFE;
+            int parity = Integer.bitCount(b) % 2 == 0 ? 1 : 0;
+            key64[i] = (byte) (b | parity);
         }
 
-        return result;
+        // Последний байт (из последнего полубайта + паритет)
+        int lastBits = ((key56[6] & 0xFE) << 1);
+        int parity = Integer.bitCount(lastBits >> 1) % 2 == 0 ? 1 : 0;
+        key64[7] = (byte) ((lastBits & 0xFE) | parity);
+
+        return key64;
     }
 
-    // Возвращает битовый подмассив длиной `bitLength`, начиная с bitOffset
-    private static byte[] extractBits(byte[] src, int bitOffset, int bitLength) {
-        byte[] result = new byte[(bitLength + 7) / 8];
-        for (int i = 0; i < bitLength; i++) {
-            int srcByte = (bitOffset + i) / 8;
-            int srcBit = 7 - ((bitOffset + i) % 8);
-            int bit = (src[srcByte] >> srcBit) & 1;
+    private static int leftShift28(int value, int shift) {
+        return ((value << shift) | (value >>> (28 - shift))) & 0x0FFFFFFF;
+    }
 
-            int dstByte = i / 8;
-            int dstBit = 7 - (i % 8);
-            result[dstByte] |= (byte) (bit << dstBit);
+    private static long toLong(byte[] bytes) {
+        long result = 0;
+        for (byte b : bytes) {
+            result = (result << 8) | (b & 0xFFL);
         }
         return result;
     }
 
-    // Сдвиг влево на n бит для массива длиной bitLength
-    private static byte[] shiftLeft(byte[] data, int bitLength, int n) {
-        byte[] result = new byte[data.length];
-        for (int i = 0; i < bitLength; i++) {
-            int srcIndex = (i + n) % bitLength;
-
-            int srcByte = srcIndex / 8;
-            int srcBit = 7 - (srcIndex % 8);
-            int bit = (data[srcByte] >> srcBit) & 1;
-
-            int dstByte = i / 8;
-            int dstBit = 7 - (i % 8);
-            result[dstByte] |= (byte) (bit << dstBit);
-        }
-        return result;
-    }
-
-    // Объединяет два битовых массива длиной leftBits бит каждый
-    private static byte[] joinBitArrays(byte[] a, byte[] b, int bitLengthEach) {
-        int totalBits = bitLengthEach * 2;
-        byte[] result = new byte[(totalBits + 7) / 8];
-
-        for (int i = 0; i < totalBits; i++) {
-            byte[] src = i < bitLengthEach ? a : b;
-            int srcBitIndex = i % bitLengthEach;
-
-            int srcByte = srcBitIndex / 8;
-            int srcBit = 7 - (srcBitIndex % 8);
-            int bit = (src[srcByte] >> srcBit) & 1;
-
-            int dstByte = i / 8;
-            int dstBit = 7 - (i % 8);
-            result[dstByte] |= bit << dstBit;
+    private static byte[] toByteArray(long value, int byteCount) {
+        byte[] result = new byte[byteCount];
+        for (int i = byteCount - 1; i >= 0; i--) {
+            result[i] = (byte) (value & 0xFF);
+            value >>>= 8;
         }
         return result;
     }

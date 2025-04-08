@@ -1,7 +1,11 @@
 package org.cryptography.lab1.DES;
 
+import lombok.extern.slf4j.Slf4j;
 import org.cryptography.lab1.enums.BitsOrder;
 
+import static org.cryptography.lab1.DES.DESUtils.toUnsignedByte;
+
+@Slf4j
 public class SBoxConversion {
 
     private static final byte[][] S_BOX1 = {
@@ -63,33 +67,38 @@ public class SBoxConversion {
     private static final byte[][][] S_BOXES = {S_BOX1, S_BOX2, S_BOX3, S_BOX4, S_BOX5, S_BOX6, S_BOX7, S_BOX8};
 
     public static byte[] sBoxConversion(byte[] input, BitsOrder bitsOrder) {
+//        log.info("sBoxConversion start with input {}", input);
         if (input.length != S_BOXES.length) {
             throw new IllegalArgumentException("Input array length does not match expected length");
         }
         byte[] resultBlocks = new byte[input.length];
         for (int i = 0; i < input.length; i++) {
             int row, col;
+
+            int inputI = toUnsignedByte(input[i]);
             if (bitsOrder == BitsOrder.LSB_FIRST) {
-                boolean firstBit = ((input[i] & 1) == 1);
-                boolean sixthBit = (((input[i] >> 5) & 1) == 1);
-                row = (firstBit ? 1 : 0) | (sixthBit ? 2 : 0);
-                col = (input[i] >> 1) & 15;
+                int firstBit = inputI & 1;
+                int sixthBit = (inputI >>> 5) & 1;
+                row = firstBit | (sixthBit << 1);
+                col = (inputI >>> 1) & 0xF;
             } else {
-                boolean firstBit = (((input[i] >> 7) & 1) == 1);
-                boolean sixthBit = (((input[i] >> 2) & 1) == 1);
-                row = (firstBit ? 2 : 0) | (sixthBit ? 1 : 0);
-                col = (input[i] >> 3) & 7;
+                int firstBit = (inputI >>> 7) & 1;
+                int sixthBit = (inputI >>> 2) & 1;
+                row = (firstBit << 1) | sixthBit;
+                col = (inputI >>> 3) & 0x7;
             }
             resultBlocks[i] = S_BOXES[i][row][col];
-            System.out.println("row: " + row + ", col: " + col);
+//            log.info("row: {}, col: {}, resultI: {}", row, col, Integer.toBinaryString(resultBlocks[i] & 0x0F));
         }
         return concatenateBlocks(resultBlocks);
     }
 
     private static byte[] concatenateBlocks(byte[] blocks) {
-        byte[] result = new byte[blocks.length / 2];
-        for (int i = 0; i < blocks.length / 2; i++) {
-            result[i] = (byte) ((blocks[i * 2] << 4) | blocks[i * 2 + 1]);
+        byte[] result = new byte[(blocks.length + 1) / 2];
+        for (int i = 0; i < (blocks.length + 1) / 2; i++) {
+            int high = blocks[i * 2] << 4;
+            int low = (i * 2 + 1 < blocks.length) ? toUnsignedByte(blocks[i * 2 + 1]) : 0;
+            result[i] = (byte) ((high | low) & 0xFF);
         }
         return result;
     }

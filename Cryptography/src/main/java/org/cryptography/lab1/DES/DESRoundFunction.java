@@ -5,8 +5,11 @@ import org.cryptography.lab1.enums.BitsOrder;
 import org.cryptography.lab1.rearrangingBits.RearrangingBits;
 import org.cryptography.lab1.interfaces.RoundFunction;
 
+import java.awt.*;
 import java.util.Arrays;
 
+import static org.cryptography.lab1.DES.DESUtils.toUnsignedByte;
+import static org.cryptography.lab1.DES.DESUtils.xor;
 import static org.cryptography.lab1.DES.EBoxConversion.*;
 
 @Slf4j
@@ -31,11 +34,17 @@ public class DESRoundFunction implements RoundFunction {
 
     @Override
     public byte[] roundConversion(byte[] inputBlock, byte[] roundKey) {
+//        log.info("Round conversion started with inputBlock = {}, roundKey = {}", inputBlock, roundKey);
         byte[] eBitSelectionOfInputBlock = EBoxConversion.eBitSelection(inputBlock, bitsOrder);
-        byte[] xorBlocks = XOR(eBitSelectionOfInputBlock, roundKey);
+//        log.info("After eBitSelection = {}", eBitSelectionOfInputBlock);
+        byte[] xorBlocks = xor(eBitSelectionOfInputBlock, roundKey);
+//        log.info("After xorBlocks = {}", xorBlocks);
         byte[] sixBitsBoxes = splitIntoBoxes(xorBlocks);
+//        log.info("After splitIntoBoxes = {}", sixBitsBoxes);
         byte[] result = SBoxConversion.sBoxConversion(sixBitsBoxes, bitsOrder);
+//        log.info("After sBoxConversion = {}", result);
         result = RearrangingBits.rearrangingBits(result, pBox, bitsOrder, 1);
+        log.info("Round result: {}", result);
         return result;
     }
 
@@ -51,24 +60,13 @@ public class DESRoundFunction implements RoundFunction {
                 int byteIndex = bitIndex / 8;
                 int bitOffset = bitIndex % 8;
                 if (byteIndex < input.length) {
-                    int bit = (input[byteIndex] >> (7 - bitOffset)) & 1;
+                    int currentByte = toUnsignedByte(input[byteIndex]);
+                    int bit = (currentByte >>> (7 - bitOffset)) & 1;
                     value = (value << 1) | bit;
                 }
                 bitIndex++;
             }
             result[i] = (byte) value;
-        }
-        log.info("6-битовые блоки: {}", Arrays.toString(result));
-        return result;
-    }
-
-    public static byte[] XOR(byte[] firstBlock, byte[] secondBlock) {
-        if (firstBlock.length != secondBlock.length) {
-            throw new IllegalArgumentException("Длины массивов должны совпадать");
-        }
-        byte[] result = new byte[firstBlock.length];
-        for (int i = 0; i < firstBlock.length; i++) {
-            result[i] = (byte) (firstBlock[i] ^ secondBlock[i]);
         }
         return result;
     }

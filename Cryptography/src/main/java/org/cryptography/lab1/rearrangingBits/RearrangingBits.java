@@ -2,6 +2,8 @@ package org.cryptography.lab1.rearrangingBits;
 
 import org.cryptography.lab1.enums.BitsOrder;
 
+import static org.cryptography.lab1.DES.DESUtils.toUnsignedByte;
+
 public class RearrangingBits {
     public static byte[] rearrangingBits(byte[] data, int[] pBox, BitsOrder bitsOrder, int indexFirstBit) {
         byte[] result = new byte[(pBox.length + 7) / 8];
@@ -16,12 +18,11 @@ public class RearrangingBits {
             }
 
             boolean curBit;
-
-
+            int curByte = data[byteIndex];
             if (bitsOrder == BitsOrder.LSB_FIRST) {
-                curBit = ((data[byteIndex] >> bitPos) & 1) == 1;
+                curBit = ((curByte >>> bitPos) & 1) == 1;
             } else {
-                curBit = ((data[byteIndex] >> (7 - bitPos)) & 1) == 1;
+                curBit = ((curByte >>> (7 - bitPos)) & 1) == 1;
             }
 
             int destByteIndex = i / 8;

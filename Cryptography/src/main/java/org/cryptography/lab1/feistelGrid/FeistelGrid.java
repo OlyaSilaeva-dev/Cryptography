@@ -1,17 +1,18 @@
 package org.cryptography.lab1.feistelGrid;
 
+import lombok.extern.slf4j.Slf4j;
 import org.cryptography.lab1.interfaces.KeyExpansion;
 import org.cryptography.lab1.interfaces.RoundFunction;
 import org.cryptography.lab1.interfaces.SymmetricCipher;
 
 import java.util.Arrays;
 
-import static org.cryptography.lab1.DES.DESRoundFunction.XOR;
+import static org.cryptography.lab1.DES.DESUtils.xor;
 
 /**
  * Реализация функционала сети Фейстеля
  */
-
+@Slf4j
 public class FeistelGrid implements SymmetricCipher {
     private final KeyExpansion keyExpansion;
     private final RoundFunction roundFunction;
@@ -29,23 +30,19 @@ public class FeistelGrid implements SymmetricCipher {
 
     @Override
     public byte[] encrypt(byte[] plaintext) {
-        int halfSize = plaintext.length / 2;
+        log.info("Encrypt plaintext: {}", plaintext);
+        int halfSize = (plaintext.length + 1) / 2;
         byte[] leftBlock = Arrays.copyOfRange(plaintext, 0, halfSize);
         byte[] rightBlock = Arrays.copyOfRange(plaintext, halfSize, plaintext.length);
 
-        for (int i = 0; i < roundKeys.length; i++) {
-            byte[] newRight = XOR(leftBlock, roundFunction.roundConversion(rightBlock, roundKeys[i]));
+        for (byte[] roundKey : roundKeys) {
+            log.info("Round key: {}, Left block: {}, Right block {}", Arrays.toString(roundKey), Arrays.toString(leftBlock), Arrays.toString(rightBlock));
+            byte[] newRight = xor(leftBlock, roundFunction.roundConversion(rightBlock, roundKey));
             leftBlock = rightBlock;
             rightBlock = newRight;
         }
-        return concatenate(leftBlock, rightBlock);
-    }
 
-    private byte[] concatenate(byte[] leftBlock, byte[] rightBlock) {
-        byte[] result = new byte[leftBlock.length + rightBlock.length];
-        System.arraycopy(leftBlock, 0, result, 0, leftBlock.length);
-        System.arraycopy(rightBlock, 0, result, leftBlock.length, rightBlock.length);
-        return result;
+        return concatenate(rightBlock, leftBlock);
     }
 
     @Override
@@ -55,11 +52,18 @@ public class FeistelGrid implements SymmetricCipher {
         byte[] rightBlock = Arrays.copyOfRange(ciphertext, halfSize, ciphertext.length);
 
         for (int i = roundKeys.length - 1; i >= 0; i--) {
-            byte[] newRight = XOR(leftBlock, roundFunction.roundConversion(rightBlock, roundKeys[i]));
-            leftBlock = rightBlock;
-            rightBlock = newRight;
+            byte[] newLeft = xor(rightBlock, roundFunction.roundConversion(leftBlock, roundKeys[i]));
+            rightBlock = leftBlock;
+            leftBlock = newLeft;
         }
-        return concatenate(leftBlock, rightBlock);
+        return concatenate(rightBlock, leftBlock);
+    }
+
+    private byte[] concatenate(byte[] leftBlock, byte[] rightBlock) {
+        byte[] result = new byte[leftBlock.length + rightBlock.length];
+        System.arraycopy(leftBlock, 0, result, 0, leftBlock.length);
+        System.arraycopy(rightBlock, 0, result, leftBlock.length, rightBlock.length);
+        return result;
     }
 
     @Override

@@ -52,6 +52,7 @@ public class SymmetricCipherContext {
         int blockSize = this.cipher.getBlockSize();
 
         plaintext = applyPadding(plaintext, blockSize);
+        log.info("Plaintext with padding: {}", Arrays.toString(plaintext));
 
         int blockCnt = (int) Math.ceil(plaintext.length / (double) blockSize);
         byte[][] blocks = new byte[blockCnt][blockSize];
@@ -85,7 +86,7 @@ public class SymmetricCipherContext {
                 padded[padded.length - 1] = (byte) paddingSize;
             }
             case PKCS7 -> {
-                Arrays.fill(padded, data.length, padded.length - 1, (byte) paddingSize);
+                Arrays.fill(padded, data.length, padded.length, (byte) paddingSize);
             }
             case ISO_10126 -> {
                 SecureRandom random = new SecureRandom();
@@ -107,7 +108,7 @@ public class SymmetricCipherContext {
     }
 
     private byte[] ECBEncrypt(byte[][] blocks, int blockSize, int blockCnt) {
-        byte[] ciphertext = new byte[blockCnt];
+        byte[] ciphertext = new byte[blockCnt * blockSize];
         for (int i = 0; i < blockCnt; i++) {
             byte[] cipherBlock = cipher.encrypt(blocks[i]);
             System.arraycopy(cipherBlock, 0, ciphertext, i * blockSize, blockSize);
@@ -136,10 +137,7 @@ public class SymmetricCipherContext {
             byte[] xorBlock = XOR2Blocks(blocks[i], prevCipherBlock);
             byte[] cipherBlock = cipher.encrypt(xorBlock);
             System.arraycopy(cipherBlock, 0, ciphertext, i * blockSize, blockSize);
-
-            if (i < blockCnt - 1) {
-                prevCipherBlock = XOR2Blocks(blocks[i], cipherBlock); ///??? blocks[i]
-            }
+            prevCipherBlock = XOR2Blocks(blocks[i], cipherBlock);
         }
 
         return ciphertext;
@@ -152,7 +150,7 @@ public class SymmetricCipherContext {
         for (int i = 0; i < blockCnt; i++) {
             byte[] cipherBlock = cipher.encrypt(feedback);
             byte[] xorResult = XOR2Blocks(blocks[i], cipherBlock);
-            System.arraycopy(cipherBlock, 0, ciphertext, i * blockSize, blockSize);
+            System.arraycopy(xorResult, 0, ciphertext, i * blockSize, blockSize);
             feedback = xorResult.clone();
         }
         return ciphertext;
@@ -175,7 +173,7 @@ public class SymmetricCipherContext {
         byte[] counter = iv.clone();
 
         for (int i = 0; i < blockCnt; i++) {
-            byte[] encryptedBlock = cipher.encrypt(blocks[i]);
+            byte[] encryptedBlock = cipher.encrypt(counter);
             byte[] xorResult = XOR2Blocks(blocks[i], encryptedBlock);
             System.arraycopy(xorResult, 0, ciphertext, i * blockSize, blockSize);
             incrementCounter(counter);
@@ -194,7 +192,7 @@ public class SymmetricCipherContext {
         byte[] counter = iv.clone();
 
         for (int i = 0; i < blockCnt; i++) {
-            byte[] xorBlock = XOR2Blocks(blocks[i], iv);
+            byte[] xorBlock = XOR2Blocks(blocks[i], counter);
             byte[] cipherBlock = cipher.encrypt(xorBlock);
             System.arraycopy(cipherBlock, 0, ciphertext, i * blockSize, blockSize);
             increaseCounterByDelta(counter);
@@ -225,16 +223,39 @@ public class SymmetricCipherContext {
             System.arraycopy(ciphertext, i * blockSize, cipherBlocks[i], 0, blockSize);
         }
 
-        log.info(Arrays.toString(cipherBlocks));
-        return switch (encryptionMode) {
+        log.info(Arrays.deepToString(cipherBlocks));
+        byte[] result = switch (encryptionMode) {
             case ECB -> ECBDecrypt(cipherBlocks, blockSize, blockCnt);
             case CBC -> CBCDecrypt(cipherBlocks, blockSize, blockCnt);
-            case PCBC -> PCBDecrypt(cipherBlocks, blockSize, blockCnt);
+            case PCBC -> PCBCDecrypt(cipherBlocks, blockSize, blockCnt);
             case CFB -> CFBDecrypt(cipherBlocks, blockSize, blockCnt);
             case OFB -> OFBDecrypt(cipherBlocks, blockSize, blockCnt);
             case CTR -> CTRDecrypt(cipherBlocks, blockSize, blockCnt);
             case RandomDelta -> RandomDeltaDecrypt(cipherBlocks, blockSize, blockCnt);
         };
+
+        return removePadding(result);
+    }
+
+    private byte[] removePadding(byte[] data) {
+        int padLength;
+        switch (paddingMode) {
+            case PKCS7, ANSI_X923, ISO_10126 -> {
+                padLength = data[data.length - 1] & 0xFF;
+                if (padLength == 0 || padLength > cipher.getBlockSize()) {
+                    throw new IllegalArgumentException("Invalid padding length: " + padLength);
+                }
+                return Arrays.copyOfRange(data, 0, data.length - padLength);
+            }
+            case Zeros -> {
+                int i = data.length - 1;
+                while (i >= 0 && data[i] == 0) {
+                    i--;
+                }
+                return Arrays.copyOf(data, i + 1);
+            }
+            default -> throw new IllegalArgumentException("Unsupported padding mode: " + paddingMode);
+        }
     }
 
     private byte[] ECBDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
@@ -259,7 +280,7 @@ public class SymmetricCipherContext {
         return plaintext;
     }
 
-    private byte[] PCBDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
+    private byte[] PCBCDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
         byte[] plaintext = new byte[blockCnt * blockSize];
         byte[] prevPlain = iv.clone();
 
@@ -267,7 +288,10 @@ public class SymmetricCipherContext {
             byte[] decryptedBlock = cipher.decrypt(blocks[i]);
             byte[] plainBlock = XOR2Blocks(decryptedBlock, prevPlain);
             System.arraycopy(plainBlock, 0, plaintext, i * blockSize, blockSize);
-            prevPlain = plainBlock;
+
+            if (i < blockCnt - 1) {
+                prevPlain = XOR2Blocks(plainBlock, blocks[i]);
+            }
         }
         return plaintext;
     }
@@ -295,5 +319,9 @@ public class SymmetricCipherContext {
 
     private byte[] RandomDeltaDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
         return RandomDeltaEncrypt(blocks, blockSize, blockCnt);
+    }
+
+    public void shutdown() {
+        executor.shutdown();
     }
 }

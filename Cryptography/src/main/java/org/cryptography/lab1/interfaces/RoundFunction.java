@@ -14,5 +14,7 @@ public interface RoundFunction {
      * Возвращает размер блока алгоритма в байтах.
      */
     int getBlockSize();
+
+    byte[] splitIntoBoxes(byte[] input);
 }
 
