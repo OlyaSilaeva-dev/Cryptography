@@ -2,6 +2,8 @@ package org.cryptography.lab1.DES;
 
 import lombok.extern.slf4j.Slf4j;
 import org.cryptography.lab1.enums.BitsOrder;
+
+import static org.cryptography.lab1.Main.printBytes;
 import static org.cryptography.lab1.rearrangingBits.RearrangingBits.rearrangingBits;
 
 @Slf4j
@@ -19,9 +21,6 @@ public class EBoxConversion {
     };
 
     public static byte[] eBitSelection(byte[] data, BitsOrder bitsOrder) {
-//        log.info("eBitSelection {}, size(4) = {}", data, data.length);
-        byte[] result = rearrangingBits(data, eBitSelectionTable, bitsOrder, 1);
-//        log.info("eBitSelection result = {}, size(6) = {}", result, result.length);
-        return result;
+        return rearrangingBits(data, eBitSelectionTable, bitsOrder, 1);
     }
 }

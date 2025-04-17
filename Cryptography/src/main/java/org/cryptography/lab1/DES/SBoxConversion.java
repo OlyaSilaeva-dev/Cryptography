@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.cryptography.lab1.enums.BitsOrder;
 
 import static org.cryptography.lab1.DES.DESUtils.toUnsignedByte;
+import static org.cryptography.lab1.Main.printBytes;
 
 @Slf4j
 public class SBoxConversion {
@@ -76,7 +77,7 @@ public class SBoxConversion {
             int row, col;
 
             int inputI = toUnsignedByte(input[i]);
-            if (bitsOrder == BitsOrder.LSB_FIRST) {
+            if (bitsOrder == BitsOrder.MSB_FIRST) {
                 int firstBit = inputI & 1;
                 int sixthBit = (inputI >>> 5) & 1;
                 row = firstBit | (sixthBit << 1);

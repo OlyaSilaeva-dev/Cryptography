@@ -11,8 +11,6 @@ public class DESUtils {
         }
         byte[] result = new byte[firstBlock.length];
         for (int i = 0; i < firstBlock.length; i++) {
-//            int first = toUnsignedByte(firstBlock[i]);
-//            int second = toUnsignedByte(secondBlock[i]);
             result[i] = (byte) (firstBlock[i] ^ secondBlock[i]);
         }
         return result;

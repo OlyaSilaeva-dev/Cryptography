@@ -42,7 +42,7 @@ public class FeistelGrid implements SymmetricCipher {
             rightBlock = newRight;
         }
 
-        return concatenate(rightBlock, leftBlock);
+        return concatenate(leftBlock, rightBlock);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class FeistelGrid implements SymmetricCipher {
             rightBlock = leftBlock;
             leftBlock = newLeft;
         }
-        return concatenate(rightBlock, leftBlock);
+        return concatenate(leftBlock, rightBlock);
     }
 
     private byte[] concatenate(byte[] leftBlock, byte[] rightBlock) {

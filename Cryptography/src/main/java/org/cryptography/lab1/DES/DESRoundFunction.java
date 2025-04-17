@@ -5,12 +5,7 @@ import org.cryptography.lab1.enums.BitsOrder;
 import org.cryptography.lab1.rearrangingBits.RearrangingBits;
 import org.cryptography.lab1.interfaces.RoundFunction;
 
-import java.awt.*;
-import java.util.Arrays;
-
-import static org.cryptography.lab1.DES.DESUtils.toUnsignedByte;
 import static org.cryptography.lab1.DES.DESUtils.xor;
-import static org.cryptography.lab1.DES.EBoxConversion.*;
 
 @Slf4j
 public class DESRoundFunction implements RoundFunction {
@@ -34,15 +29,15 @@ public class DESRoundFunction implements RoundFunction {
 
     @Override
     public byte[] roundConversion(byte[] inputBlock, byte[] roundKey) {
-//        log.info("Round conversion started with inputBlock = {}, roundKey = {}", inputBlock, roundKey);
+        log.info("Round conversion started with inputBlock = {}, roundKey = {}", inputBlock, roundKey);
         byte[] eBitSelectionOfInputBlock = EBoxConversion.eBitSelection(inputBlock, bitsOrder);
-//        log.info("After eBitSelection = {}", eBitSelectionOfInputBlock);
+        log.info("After eBitSelection = {}", eBitSelectionOfInputBlock);
         byte[] xorBlocks = xor(eBitSelectionOfInputBlock, roundKey);
-//        log.info("After xorBlocks = {}", xorBlocks);
+        log.info("After xorBlocks = {}", xorBlocks);
         byte[] sixBitsBoxes = splitIntoBoxes(xorBlocks);
-//        log.info("After splitIntoBoxes = {}", sixBitsBoxes);
+        log.info("After splitIntoBoxes = {}", sixBitsBoxes);
         byte[] result = SBoxConversion.sBoxConversion(sixBitsBoxes, bitsOrder);
-//        log.info("After sBoxConversion = {}", result);
+        log.info("After sBoxConversion = {}", result);
         result = RearrangingBits.rearrangingBits(result, pBox, bitsOrder, 1);
         log.info("Round result: {}", result);
         return result;
@@ -60,7 +55,7 @@ public class DESRoundFunction implements RoundFunction {
                 int byteIndex = bitIndex / 8;
                 int bitOffset = bitIndex % 8;
                 if (byteIndex < input.length) {
-                    int currentByte = toUnsignedByte(input[byteIndex]);
+                    int currentByte = input[byteIndex];
                     int bit = (currentByte >>> (7 - bitOffset)) & 1;
                     value = (value << 1) | bit;
                 }

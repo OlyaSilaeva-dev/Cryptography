@@ -69,7 +69,7 @@ public class SymmetricCipherContext {
             case CFB -> CFBEncrypt(blocks, blockSize, blockCnt);
             case OFB -> OFBEncrypt(blocks, blockSize, blockCnt);
             case CTR -> CTREncrypt(blocks, blockSize, blockCnt);
-            case RandomDelta -> RandomDeltaEncrypt(blocks, blockSize, blockCnt);
+            case RandomDelta -> randomDeltaEncrypt(blocks, blockSize, blockCnt);
         };
     }
 
@@ -187,7 +187,7 @@ public class SymmetricCipherContext {
         }
     }
 
-    private byte[] RandomDeltaEncrypt(byte[][] blocks, int blockSize, int blockCnt) {
+    private byte[] randomDeltaEncrypt(byte[][] blocks, int blockSize, int blockCnt) {
         byte[] ciphertext = new byte[blockCnt * blockSize];
         byte[] counter = iv.clone();
 
@@ -318,7 +318,7 @@ public class SymmetricCipherContext {
     }
 
     private byte[] RandomDeltaDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
-        return RandomDeltaEncrypt(blocks, blockSize, blockCnt);
+        return randomDeltaEncrypt(blocks, blockSize, blockCnt);
     }
 
     public void shutdown() {
