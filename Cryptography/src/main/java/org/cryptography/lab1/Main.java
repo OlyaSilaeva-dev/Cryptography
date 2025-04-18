@@ -6,13 +6,18 @@ import org.cryptography.lab1.enums.EncryptionMode;
 import org.cryptography.lab1.enums.PaddingMode;
 import org.cryptography.lab1.symmetricCipherContext.SymmetricCipherContext;
 
+import java.nio.file.Files;
+import java.io.File;
+
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RuntimeException {
         byte[] message = "Hello World!".getBytes(StandardCharsets.UTF_8);
         System.out.println("Plaintext: " + new String(message));
         log.info("input length: {}", message.length);
@@ -29,23 +34,45 @@ public class Main {
                 (byte) 0x11
         );
 
+        byte[] plainTextAfterDecryption = encryptionDecryptionProcess(message, symmetricCipherContext);
+        System.out.println("Decrypted: " + new String(plainTextAfterDecryption, StandardCharsets.UTF_8));
+
+        /*File fi = new File("src/main/resources/test1.jpg");
+        System.out.println("Current working directory: " + System.getProperty("user.dir"));
+
+        try {
+            byte[] fileContent = Files.readAllBytes(fi.toPath());
+            byte[] plainTextAfterDecryption = encryptionDecryptionProcess(fileContent, symmetricCipherContext);
+
+            Path outputPath = Paths.get("decrypted_output.jpg");
+            Files.write(outputPath, plainTextAfterDecryption);
+            log.info("Decrypted image saved to {}", outputPath.toAbsolutePath());
+        } catch (Exception e) {
+            log.error("Exception during crypto: {}", e.getMessage(), e);
+            throw new RuntimeException(e.getMessage());
+        }*/
+
+        symmetricCipherContext.shutdown();
+    }
+
+    private static byte[] encryptionDecryptionProcess(byte[] message, SymmetricCipherContext symmetricCipherContext) {
+        final byte[][] plainTextAfterDecryption = {new byte[1]};
         CompletableFuture<Void> future = symmetricCipherContext.encryptAsync(message)
                 .thenApply(ciphertext -> {
-                    System.out.println("Encrypted: " + new String(ciphertext.toString().getBytes(StandardCharsets.UTF_8)));
+                    System.out.println("Encrypted (hex): " + bytesToHex(ciphertext));
                     return ciphertext;
                 })
                 .thenCompose(symmetricCipherContext::decryptAsync)
                 .thenAccept(decrypted -> {
-                    System.out.println("Decrypted: " + new String(decrypted, StandardCharsets.UTF_8));
+                    plainTextAfterDecryption[0] = decrypted;
                 })
                 .exceptionally(ex -> {
                     log.error("Exception during crypto: {}", ex.getMessage(), ex);
                     return null;
                 });
-
         future.join();
-        symmetricCipherContext.shutdown(); 
 
+        return plainTextAfterDecryption[0];
     }
 
     public static void printBytes(byte[] data) {
