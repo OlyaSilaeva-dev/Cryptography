@@ -40,7 +40,7 @@ public class SymmetricCipherContext {
 
     private byte generateRandomDelta() {
         SecureRandom random = new SecureRandom();
-        return (byte) (random.nextInt(256) - 128); // От -128 до 127
+        return (byte) random.nextInt(256); // От -128 до 127
     }
 
     public CompletableFuture<byte[]> encryptAsync(byte[] plaintext) {
@@ -201,7 +201,7 @@ public class SymmetricCipherContext {
     }
 
     private void increaseCounterByDelta(byte[] counter) {
-        int carry = delta;
+        int carry = delta & 0xFF;
         for (int i = counter.length - 1; i >= 0; i--) {
             int sum = (counter[i] & 0xFF) + carry;
             counter[i] = (byte) sum;
@@ -318,7 +318,16 @@ public class SymmetricCipherContext {
     }
 
     private byte[] RandomDeltaDecrypt(byte[][] blocks, int blockSize, int blockCnt) {
-        return randomDeltaEncrypt(blocks, blockSize, blockCnt);
+        byte[] ciphertext = new byte[blockCnt * blockSize];
+        byte[] counter = iv.clone();
+
+        for (int i = 0; i < blockCnt; i++) {
+            byte[] plainBlock = cipher.decrypt(blocks[i]);
+            byte[] xorBlock = XOR2Blocks(plainBlock, counter);
+            System.arraycopy(xorBlock, 0, ciphertext, i * blockSize, blockSize);
+            increaseCounterByDelta(counter);
+        }
+        return ciphertext;
     }
 
     public void shutdown() {

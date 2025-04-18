@@ -8,44 +8,35 @@ import org.cryptography.lab1.symmetricCipherContext.SymmetricCipherContext;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class Main {
     public static void main(String[] args) {
         byte[] message = "Hello World!".getBytes(StandardCharsets.UTF_8);
-        log.info(Arrays.toString(message));
-        printBytes(message);
+        System.out.println("Plaintext: " + new String(message));
         log.info("input length: {}", message.length);
 
-        byte[] key = "1234567".getBytes(StandardCharsets.UTF_8);
-        for (byte b : key) {
-            System.out.print(b + " ");
-        }
-        System.out.println();
+        byte[] iv = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+        byte[] key = generateKey();
 
         SymmetricCipherContext symmetricCipherContext = new SymmetricCipherContext(
                 new DES(),
                 key,
-                EncryptionMode.ECB,
-                PaddingMode.Zeros,
-                new byte[8]
+                EncryptionMode.RandomDelta,
+                PaddingMode.PKCS7,
+                iv,
+                (byte) 0x11
         );
-
 
         CompletableFuture<Void> future = symmetricCipherContext.encryptAsync(message)
                 .thenApply(ciphertext -> {
-                    System.out.println("Encrypted (base64): " + Base64.getEncoder().encodeToString(ciphertext));
-                    printBytes(ciphertext);
+                    System.out.println("Encrypted: " + new String(ciphertext.toString().getBytes(StandardCharsets.UTF_8)));
                     return ciphertext;
                 })
                 .thenCompose(symmetricCipherContext::decryptAsync)
                 .thenAccept(decrypted -> {
                     System.out.println("Decrypted: " + new String(decrypted, StandardCharsets.UTF_8));
-                    printBytes(decrypted);
-                    System.out.println("Output length: " + decrypted.length);
                 })
                 .exceptionally(ex -> {
                     log.error("Exception during crypto: {}", ex.getMessage(), ex);
@@ -55,11 +46,6 @@ public class Main {
         future.join();
         symmetricCipherContext.shutdown(); 
 
-    }
-
-    private static void printResultByUTF8(byte[] data) {
-        String decryptedText = new String(data, StandardCharsets.UTF_8);
-        System.out.println("Дешифрованный текст: " + decryptedText);
     }
 
     public static void printBytes(byte[] data) {
@@ -75,9 +61,7 @@ public class Main {
         random.nextBytes(key);
         for (int i = 0; i < key.length; i++) {
             key[i] = (byte) (key[i] & 0xFF);
-            System.out.print(Integer.toBinaryString(key[i] & 0xFF) + " ");
         }
-        System.out.println();
         return key;
     }
 
