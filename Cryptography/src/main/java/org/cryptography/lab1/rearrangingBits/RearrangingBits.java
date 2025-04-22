@@ -2,8 +2,6 @@ package org.cryptography.lab1.rearrangingBits;
 
 import org.cryptography.lab1.enums.BitsOrder;
 
-import static org.cryptography.lab1.DES.DESUtils.toUnsignedByte;
-
 public class RearrangingBits {
     public static byte[] rearrangingBits(byte[] data, int[] pBox, BitsOrder bitsOrder, int indexFirstBit) {
         byte[] result = new byte[(pBox.length + 7) / 8];

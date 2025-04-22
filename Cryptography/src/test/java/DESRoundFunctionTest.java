@@ -32,15 +32,15 @@ public class DESRoundFunctionTest {
         assertEquals(6, result.length); // 48 бит = 6 байт
     }
 
-    @Test
-    void testSplitIntoBoxes_shouldSplitToSixBitsChunks() {
-        byte[] input = {(byte) 0b111111, (byte) 0b000000}; // 12 бит
-        byte[] result = DESRoundFunction.splitIntoBoxes(input);
-
-        assertEquals(2, result.length);
-        assertEquals(0b111111, result[0] & 0x3F);
-        assertEquals(0b000000, result[1] & 0x3F);
-    }
+//    @Test
+//    void testSplitIntoBoxes_shouldSplitToSixBitsChunks() {
+//        byte[] input = {(byte) 0b111111, (byte) 0b000000}; // 12 бит
+//        byte[] result = DESRoundFunction.splitIntoBoxes(input);
+//
+//        assertEquals(2, result.length);
+//        assertEquals(0b111111, result[0] & 0x3F);
+//        assertEquals(0b000000, result[1] & 0x3F);
+//    }
 
     @Test
     void testSBoxConversion_shouldReturnCorrectSize() {

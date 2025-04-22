@@ -3,8 +3,7 @@ package org.cryptography.lab1.DES;
 import lombok.extern.slf4j.Slf4j;
 import org.cryptography.lab1.enums.BitsOrder;
 
-import static org.cryptography.lab1.DES.DESUtils.toUnsignedByte;
-import static org.cryptography.lab1.Main.printBytes;
+import static org.cryptography.lab1.utils.Utils.toUnsignedByte;
 
 @Slf4j
 public class SBoxConversion {

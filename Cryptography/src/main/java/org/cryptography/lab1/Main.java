@@ -1,7 +1,9 @@
 package org.cryptography.lab1;
 
 import lombok.extern.slf4j.Slf4j;
+import org.cryptography.lab1.DEAL.DEAL;
 import org.cryptography.lab1.DES.DES;
+import org.cryptography.lab1.enums.DEALModes;
 import org.cryptography.lab1.enums.EncryptionMode;
 import org.cryptography.lab1.enums.PaddingMode;
 import org.cryptography.lab1.symmetricCipherContext.SymmetricCipherContext;
@@ -22,19 +24,29 @@ public class Main {
         System.out.println("Plaintext: " + new String(message));
         log.info("input length: {}", message.length);
 
-        byte[] iv = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
-        byte[] key = generateKey();
+//        byte[] iv = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+        byte[] key = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
 
-        SymmetricCipherContext symmetricCipherContext = new SymmetricCipherContext(
-                new DES(),
+//        byte[] key = addParityBits(generateKey());
+//        SymmetricCipherContext symmetricCipherContext = new SymmetricCipherContext(
+//                new DES(),
+//                key,
+//                EncryptionMode.RandomDelta,
+//                PaddingMode.PKCS7,
+//                iv,
+//                (byte) 0x11
+//        );
+
+        SymmetricCipherContext deal = new SymmetricCipherContext(
+                new DEAL(DEALModes.DEAL_128),
                 key,
-                EncryptionMode.RandomDelta,
+                EncryptionMode.ECB,
                 PaddingMode.PKCS7,
-                iv,
-                (byte) 0x11
+                new byte[0]
         );
 
-        byte[] plainTextAfterDecryption = encryptionDecryptionProcess(message, symmetricCipherContext);
+        byte[] plainTextAfterDecryption = encryptionDecryptionProcess(message, deal);
         System.out.println("Decrypted: " + new String(plainTextAfterDecryption, StandardCharsets.UTF_8));
 
         /*File fi = new File("src/main/resources/test1.jpg");
@@ -52,7 +64,7 @@ public class Main {
             throw new RuntimeException(e.getMessage());
         }*/
 
-        symmetricCipherContext.shutdown();
+        deal.shutdown();
     }
 
     private static byte[] encryptionDecryptionProcess(byte[] message, SymmetricCipherContext symmetricCipherContext) {
@@ -102,5 +114,21 @@ public class Main {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+
+    private static byte[] addParityBits(byte[] key56) {
+        byte[] key64 = new byte[8];
+        for (int i = 0; i < 7; i++) {
+            int b = key56[i] & 0xFE;
+            int parity = Integer.bitCount(b) % 2 == 0 ? 1 : 0;
+            key64[i] = (byte) (b | parity);
+        }
+
+        int lastBits = ((key56[6] & 0xFE) << 1);
+        int parity = Integer.bitCount(lastBits >> 1) % 2 == 0 ? 1 : 0;
+        key64[7] = (byte) ((lastBits & 0xFE) | parity);
+
+        return key64;
     }
 }

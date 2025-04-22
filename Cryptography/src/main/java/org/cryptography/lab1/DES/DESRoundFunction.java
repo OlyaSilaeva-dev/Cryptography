@@ -5,7 +5,7 @@ import org.cryptography.lab1.enums.BitsOrder;
 import org.cryptography.lab1.rearrangingBits.RearrangingBits;
 import org.cryptography.lab1.interfaces.RoundFunction;
 
-import static org.cryptography.lab1.DES.DESUtils.xor;
+import static org.cryptography.lab1.utils.Utils.xor;
 
 @Slf4j
 public class DESRoundFunction implements RoundFunction {
@@ -43,7 +43,7 @@ public class DESRoundFunction implements RoundFunction {
         return result;
     }
 
-    public byte[] splitIntoBoxes(byte[] input) {
+    private byte[] splitIntoBoxes(byte[] input) {
         int bitCount = input.length * 8;
         int resultSize = (bitCount + 5) / 6;
         byte[] result = new byte[resultSize];

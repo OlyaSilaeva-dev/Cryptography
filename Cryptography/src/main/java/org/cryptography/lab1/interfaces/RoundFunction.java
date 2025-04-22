@@ -15,6 +15,5 @@ public interface RoundFunction {
      */
     int getBlockSize();
 
-    byte[] splitIntoBoxes(byte[] input);
 }
 

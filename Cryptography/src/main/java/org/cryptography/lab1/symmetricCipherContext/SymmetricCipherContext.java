@@ -1,5 +1,6 @@
 package org.cryptography.lab1.symmetricCipherContext;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.cryptography.lab1.enums.EncryptionMode;
 import org.cryptography.lab1.enums.PaddingMode;
@@ -13,6 +14,7 @@ import java.util.concurrent.Executors;
 
 @Slf4j
 public class SymmetricCipherContext {
+    @Getter
     private final SymmetricCipher cipher;
     private final byte[] key;
     private final EncryptionMode encryptionMode;
@@ -74,20 +76,16 @@ public class SymmetricCipherContext {
     }
 
     private byte[] applyPadding(byte[] data, int blockSize) {
-        int paddingSize = blockSize - (data.length % blockSize);
+        int paddingSize = (blockSize - data.length % blockSize) % blockSize;
         byte[] padded = Arrays.copyOf(data, data.length + paddingSize);
 
         switch (paddingMode) {
-            case Zeros -> {
-                Arrays.fill(padded, data.length, padded.length, (byte) 0);
-            }
+            case Zeros -> Arrays.fill(padded, data.length, padded.length, (byte) 0);
             case ANSI_X923 -> {
                 Arrays.fill(padded, data.length, padded.length - 1, (byte) 0);
                 padded[padded.length - 1] = (byte) paddingSize;
             }
-            case PKCS7 -> {
-                Arrays.fill(padded, data.length, padded.length, (byte) paddingSize);
-            }
+            case PKCS7 -> Arrays.fill(padded, data.length, padded.length, (byte) paddingSize);
             case ISO_10126 -> {
                 SecureRandom random = new SecureRandom();
                 byte[] randomBytes = new byte[paddingSize - 1];

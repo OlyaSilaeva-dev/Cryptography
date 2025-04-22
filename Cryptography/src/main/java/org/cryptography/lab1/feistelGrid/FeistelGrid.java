@@ -7,7 +7,7 @@ import org.cryptography.lab1.interfaces.SymmetricCipher;
 
 import java.util.Arrays;
 
-import static org.cryptography.lab1.DES.DESUtils.xor;
+import static org.cryptography.lab1.utils.Utils.xor;
 
 /**
  * Реализация функционала сети Фейстеля

@@ -43,13 +43,11 @@ public final class DESKeyExpansion implements KeyExpansion {
 
     @Override
     public byte[][] keyExpansion(byte[] key) {
-        if (key.length != 7) {
-            throw new IllegalArgumentException("DES key must be 56 bits (7 bytes) long");
+        if (key.length != 8) {
+            throw new IllegalArgumentException("DES key must be 64 bits (8 bytes) long");
         }
 
-        byte[] key64 = addParityBits(key); // 56 -> 64 бит с чётностью
-
-        byte[] key56 = RearrangingBits.rearrangingBits(key64, PC1, BitsOrder.MSB_FIRST, 1); // 64 -> 56 бит
+        byte[] key56 = RearrangingBits.rearrangingBits(key, PC1, BitsOrder.MSB_FIRST, 1); // 64 -> 56 бит
 
         // Разбиваем на C и D
         long keyBits = toLong(key56); // 56 бит в long
@@ -69,21 +67,6 @@ public final class DESKeyExpansion implements KeyExpansion {
         }
 
         return roundKeys;
-    }
-
-    private byte[] addParityBits(byte[] key56) {
-        byte[] key64 = new byte[8];
-        for (int i = 0; i < 7; i++) {
-            int b = key56[i] & 0xFE;
-            int parity = Integer.bitCount(b) % 2 == 0 ? 1 : 0;
-            key64[i] = (byte) (b | parity);
-        }
-
-        int lastBits = ((key56[6] & 0xFE) << 1);
-        int parity = Integer.bitCount(lastBits >> 1) % 2 == 0 ? 1 : 0;
-        key64[7] = (byte) ((lastBits & 0xFE) | parity);
-
-        return key64;
     }
 
     private static int leftShift28(int value, int shift) {
