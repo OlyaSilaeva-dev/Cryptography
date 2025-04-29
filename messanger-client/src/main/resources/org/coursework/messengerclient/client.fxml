@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.layout.HBox?>
+<AnchorPane fx:id="ap_main" fx:controller="org.coursework.messengerclient.Controller" focusTraversable="true" prefHeight="347.0" prefWidth="341.0" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <!-- Область сообщений - занимает всё пространство кроме нижней панели -->
+        <ScrollPane fx:id="spMain" hbarPolicy="NEVER"
+                    AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
+                    AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="42">
+            <!-- Здесь будет содержимое сообщений -->
+            <content>
+                <VBox fx:id="messageContainer" />
+            </content>
+        </ScrollPane>
+
+        <!-- Нижняя панель с полем ввода и кнопкой -->
+        <HBox alignment="CENTER_LEFT"
+              spacing="10"
+              style="-fx-background-color: #f5f5f5; -fx-padding: 5;"
+              AnchorPane.leftAnchor="0"
+              AnchorPane.rightAnchor="0"
+              AnchorPane.bottomAnchor="0"
+              prefHeight="40">
+
+            <TextField fx:id="messageField"
+                       HBox.hgrow="ALWAYS"
+                       promptText="Введите сообщение..."/>
+
+            <Button fx:id="buttonSend" text="Отправить"
+                    defaultButton="true"
+                    minWidth="80"/>
+        </HBox>
+    </children>
+    <opaqueInsets>
+        <Insets />
+    </opaqueInsets>
+</AnchorPane>
