@@ -3,11 +3,11 @@ package org.cryptography.lab1.DES;
 import lombok.extern.slf4j.Slf4j;
 import org.cryptography.lab1.enums.BitsOrder;
 import org.cryptography.lab1.interfaces.RoundFunction;
-import org.cryptography.lab1.feistelGrid.FeistelGrid;
+import org.cryptography.lab1.feistelNet.FeistelNet;
 import org.cryptography.lab1.rearrangingBits.RearrangingBits;
 
 @Slf4j
-public class DES extends FeistelGrid {
+public class DES extends FeistelNet {
 
     private static final BitsOrder bitsOrder = BitsOrder.MSB_FIRST;
 

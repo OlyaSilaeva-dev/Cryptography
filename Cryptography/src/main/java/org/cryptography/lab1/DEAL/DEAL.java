@@ -1,9 +1,9 @@
 package org.cryptography.lab1.DEAL;
 
 import org.cryptography.lab1.enums.DEALModes;
-import org.cryptography.lab1.feistelGrid.FeistelGrid;
+import org.cryptography.lab1.feistelNet.FeistelNet;
 
-public class DEAL extends FeistelGrid {
+public class DEAL extends FeistelNet {
     DEALModes mode;
 
     public DEAL(DEALModes dealMode) {

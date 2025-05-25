@@ -47,10 +47,9 @@ public final class DESKeyExpansion implements KeyExpansion {
             throw new IllegalArgumentException("DES key must be 64 bits (8 bytes) long");
         }
 
-        byte[] key56 = RearrangingBits.rearrangingBits(key, PC1, BitsOrder.MSB_FIRST, 1); // 64 -> 56 бит
+        byte[] key56 = RearrangingBits.rearrangingBits(key, PC1, BitsOrder.MSB_FIRST, 1);
 
-        // Разбиваем на C и D
-        long keyBits = toLong(key56); // 56 бит в long
+        long keyBits = toLong(key56);
         int C = (int) ((keyBits >>> 28) & 0x0FFFFFFF);
         int D = (int) (keyBits & 0x0FFFFFFF);
 
@@ -61,9 +60,9 @@ public final class DESKeyExpansion implements KeyExpansion {
             D = leftShift28(D, SHIFTS[i]);
 
             long combined = (((long) C) << 28) | (D & 0x0FFFFFFF);
-            byte[] cdBytes = toByteArray(combined); // 56 бит в 7 байт
+            byte[] cdBytes = toByteArray(combined);
 
-            roundKeys[i] = RearrangingBits.rearrangingBits(cdBytes, PC2, BitsOrder.MSB_FIRST, 1); // 56 -> 48 бит
+            roundKeys[i] = RearrangingBits.rearrangingBits(cdBytes, PC2, BitsOrder.MSB_FIRST, 1);
         }
 
         return roundKeys;

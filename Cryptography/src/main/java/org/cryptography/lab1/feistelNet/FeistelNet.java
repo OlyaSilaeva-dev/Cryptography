@@ -1,4 +1,4 @@
-package org.cryptography.lab1.feistelGrid;
+package org.cryptography.lab1.feistelNet;
 
 import lombok.extern.slf4j.Slf4j;
 import org.cryptography.lab1.interfaces.KeyExpansion;
@@ -13,12 +13,12 @@ import static org.cryptography.lab1.utils.Utils.xor;
  * Реализация функционала сети Фейстеля
  */
 @Slf4j
-public class FeistelGrid implements SymmetricCipher {
+public class FeistelNet implements SymmetricCipher {
     private final KeyExpansion keyExpansion;
     private final RoundFunction roundFunction;
     private byte[][] roundKeys;
 
-    public FeistelGrid(KeyExpansion keyExpansion, RoundFunction roundFunction) {
+    public FeistelNet(KeyExpansion keyExpansion, RoundFunction roundFunction) {
         this.keyExpansion = keyExpansion;
         this.roundFunction = roundFunction;
     }

@@ -15,8 +15,6 @@ import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.concurrent.CompletableFuture;
 
-import static org.junit.Assert.*;
-
 @Slf4j
 public class DESTests {
 
