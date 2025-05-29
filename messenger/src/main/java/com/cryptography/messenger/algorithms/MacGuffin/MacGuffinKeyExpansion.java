@@ -1,16 +1,13 @@
 package com.cryptography.messenger.algorithms.MacGuffin;
 
 import com.cryptography.messenger.algorithms.interfaces.KeyExpansion;
-import com.cryptography.messenger.algorithms.utils.Utils;
 
 import java.util.Arrays;
 
-import static com.cryptography.messenger.algorithms.utils.Utils.xor;
 
+public class MacGuffinKeyExpansion implements KeyExpansion {
 
-public class MacGuffinKeySetup implements KeyExpansion {
-
-    private static int[][] S = new int[][]{
+    public static int[][] S = new int[][]{
             {2, 0, 0, 3, 3, 1, 1, 0, 0, 2, 3, 0, 3, 3, 2, 1, 1, 2, 2, 0, 0, 2, 2, 3, 1, 3, 3, 1, 0, 1, 1, 2,
                     0, 3, 1, 2, 2, 2, 2, 0, 3, 0, 0, 3, 0, 1, 3, 1, 3, 1, 2, 3, 3, 1, 1, 2, 1, 2, 2, 0, 1, 0, 0, 3},
             {3, 1, 1, 3, 2, 0, 2, 1, 0, 3, 3, 0, 1, 2, 0, 2, 3, 2, 1, 0, 0, 1, 3, 2, 2, 0, 0, 3, 1, 3, 2, 1,
@@ -31,7 +28,7 @@ public class MacGuffinKeySetup implements KeyExpansion {
 
     /**
      * @param key Исходный ключ (массив байтов). Размер - 128 бит(16 байт)
-     * @return массив раундовых ключей
+     * @return массив раундовых ключей. Размер каждого - 48 бит(6 байт)
      */
     @Override
     public byte[][] keyExpansion(byte[] key) {
